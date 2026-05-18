@@ -22,11 +22,8 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name
 Route::middleware(['auth', 'candidate'])->prefix('candidate')->name('candidate.')->group(function () {
     Route::get('/dashboard', [CandidateDashboard::class, 'index'])->name('dashboard');
     Route::get('/profile', [CandidateDashboard::class, 'profile'])->name('profile');
-
-    // Edit profile routes
     Route::get('/profile/edit', [CandidateDashboard::class, 'editProfile'])->name('profile.edit');
     Route::post('/profile/update', [CandidateDashboard::class, 'updateProfile'])->name('profile.update');
-
     Route::get('/applications', [ApplicationController::class, 'index'])->name('applications');
     Route::post('/jobs/{job}/apply', [ApplicationController::class, 'apply'])->name('apply');
     Route::delete('/applications/{application}/withdraw', [ApplicationController::class, 'destroy'])->name('applications.withdraw');
@@ -35,5 +32,6 @@ Route::middleware(['auth', 'candidate'])->prefix('candidate')->name('candidate.'
 Route::middleware(['auth', 'recruiter'])->prefix('recruiter')->name('recruiter.')->group(function () {
     Route::get('/dashboard', [RecruiterDashboard::class, 'index'])->name('dashboard');
     Route::get('/applicants', [RecruiterDashboard::class, 'applicants'])->name('applicants');
+    Route::patch('/applicants/{application}/status', [RecruiterDashboard::class, 'updateStatus'])->name('applicants.updateStatus');
     Route::resource('jobs', JobController::class);
 });

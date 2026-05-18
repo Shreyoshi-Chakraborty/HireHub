@@ -1,160 +1,228 @@
 @extends('layouts.app')
-@section('title', 'Browse Jobs')
+@section('title', 'My Jobs')
 
 @push('styles')
 <style>
-    body { background-color: #0d0d1a !important; }
-    .job-card {
+    .job-row {
         background: #13132a;
         border: 1px solid #1e1e3a;
-        border-radius: 16px;
-        padding: 24px;
-        transition: all 0.3s;
-        height: 100%;
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 10px;
+        transition: border-color 0.2s;
     }
-    .job-card:hover {
+    .job-row:hover {
         border-color: #7c3aed;
-        transform: translateY(-4px);
-        box-shadow: 0 8px 32px rgba(124,58,237,0.2);
     }
     .job-type-badge {
         background: rgba(124,58,237,0.15);
         color: #a78bfa;
         border: 1px solid #7c3aed;
         border-radius: 50px;
-        padding: 3px 14px;
-        font-size: 0.78rem;
+        padding: 3px 12px;
+        font-size: 0.75rem;
         font-weight: 600;
+        text-transform: capitalize;
     }
-    .search-bar {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid #1e1e3a;
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 2rem;
+    .expiry-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 50px;
+        padding: 3px 12px;
+        white-space: nowrap;
     }
-    .search-bar input, .search-bar select {
-        background: #0d0d1a;
-        border: 1px solid #1e1e3a;
+    .btn-edit {
+        background: rgba(124,58,237,0.12);
+        border: 1px solid #7c3aed;
+        color: #a78bfa;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-edit:hover {
+        background: #7c3aed;
         color: #fff;
-        border-radius: 10px;
     }
-    .search-bar input::placeholder { color: rgba(255,255,255,0.3); }
-    .search-bar input:focus, .search-bar select:focus {
-        background: #0d0d1a;
+    .btn-delete {
+        background: rgba(239,68,68,0.08);
+        border: 1px solid rgba(239,68,68,0.35);
+        color: #ef4444;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Outfit', sans-serif;
+    }
+    .btn-delete:hover {
+        background: rgba(239,68,68,0.18);
+    }
+
+    /* Style the Laravel pagination to match dark theme */
+    .pagination {
+        gap: 4px;
+    }
+    .page-link {
+        background: #13132a;
+        border: 1px solid #1e1e3a;
+        color: #a78bfa;
+        border-radius: 8px !important;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+    }
+    .page-link:hover {
+        background: #7c3aed;
         border-color: #7c3aed;
         color: #fff;
-        box-shadow: none;
+    }
+    .page-item.active .page-link {
+        background: #7c3aed;
+        border-color: #7c3aed;
+        color: #fff;
+    }
+    .page-item.disabled .page-link {
+        background: #0d0d1a;
+        color: rgba(255,255,255,0.2);
     }
 </style>
 @endpush
 
 @section('content')
-<div class="container py-5">
+<div class="p-4" style="background:#0d0d1a; min-height:100vh;">
 
-    {{-- Page Header --}}
-    <div class="text-center mb-5">
-        <p style="color:#a78bfa; font-size:0.8rem; letter-spacing:3px;
-                  text-transform:uppercase; font-weight:600;">
-            #Opportunities
-        </p>
-        <h2 style="color:#fff; font-weight:800; font-size:2.2rem;">Browse All Jobs</h2>
-        <p style="color:rgba(255,255,255,0.4);">Find your perfect opportunity</p>
+    {{-- Header --}}
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h3 class="fw-bold mb-0 text-white">My Jobs</h3>
+            <p style="color:rgba(255,255,255,0.4); margin:0; font-size:0.9rem;">
+                All job postings you have created
+            </p>
+        </div>
+        <a href="{{ route('recruiter.jobs.create') }}"
+           style="background:#7c3aed; color:#fff; border-radius:10px;
+                  padding:10px 20px; text-decoration:none;
+                  font-size:0.9rem; font-weight:600;">
+            <i class="bi bi-plus-lg me-1"></i> Post a Job
+        </a>
     </div>
 
-    {{-- Search Bar --}}
-    <div class="search-bar">
-        <form action="{{ route('jobs.index') }}" method="GET">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-5">
-                    <label class="form-label"
-                           style="color:rgba(255,255,255,0.5); font-size:0.85rem;">
-                        Keyword
-                    </label>
-                    <input type="text" name="search" class="form-control"
-                           placeholder="Job title or company..."
-                           value="{{ request('search') }}">
-                </div>
-                <div class="col-md-5">
-                    <label class="form-label"
-                           style="color:rgba(255,255,255,0.5); font-size:0.85rem;">
-                        Location
-                    </label>
-                    <input type="text" name="location" class="form-control"
-                           placeholder="City or country..."
-                           value="{{ request('location') }}">
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn w-100 py-2"
-                            style="background:#7c3aed; color:#fff;
-                                   border-radius:10px; font-weight:600;">
-                        <i class="bi bi-search"></i> Search
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-
-    {{-- Results count --}}
-    @if(request('search') || request('location'))
-        <p style="color:rgba(255,255,255,0.4); margin-bottom:1.5rem; font-size:0.9rem;">
-            Showing {{ $jobs->total() }} result(s)
-            @if(request('search')) for "<strong style="color:#a78bfa;">{{ request('search') }}</strong>"@endif
-            @if(request('location')) in "<strong style="color:#a78bfa;">{{ request('location') }}</strong>"@endif
-        </p>
+    {{-- Success message --}}
+    @if(session('success'))
+        <div style="background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.3);
+                    border-radius:10px; padding:12px 16px; margin-bottom:1rem;
+                    color:#34d399; font-size:0.9rem;">
+            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+        </div>
     @endif
 
-    {{-- Job Cards --}}
-    <div class="row g-4">
-        @forelse($jobs as $job)
-            <div class="col-md-6">
-                <div class="job-card">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h5 class="text-white fw-bold mb-0">{{ $job->title }}</h5>
-                        <span class="job-type-badge text-capitalize">{{ $job->job_type }}</span>
-                    </div>
-                    <p style="color:#a78bfa; margin-bottom:6px;">
-                        <i class="bi bi-building"></i> {{ $job->company_name }}
-                    </p>
-                    <p style="color:rgba(255,255,255,0.5); margin-bottom:6px; font-size:0.9rem;">
-                        <i class="bi bi-geo-alt"></i> {{ $job->location }}
-                    </p>
-                    @if($job->salary)
-                        <p style="color:#34d399; font-size:0.9rem; margin-bottom:10px;">
-                            <i class="bi bi-cash"></i> {{ $job->salary }}
-                        </p>
-                    @endif
-                    <p style="color:rgba(255,255,255,0.4); font-size:0.85rem;">
-                        {{ Str::limit($job->description, 100) }}
-                    </p>
-                    <a href="{{ route('jobs.show', $job->id) }}"
-                       class="btn btn-sm mt-2 w-100"
-                       style="background:rgba(124,58,237,0.15);
-                              border:1px solid #7c3aed;
-                              color:#a78bfa; border-radius:8px;">
-                        View & Apply →
-                    </a>
-                </div>
-            </div>
-        @empty
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-search" style="font-size:3rem; color:rgba(255,255,255,0.2);"></i>
-                <p style="color:rgba(255,255,255,0.4); margin-top:1rem;">
-                    No jobs found matching your search.
-                </p>
-                <a href="{{ route('jobs.index') }}"
-                   class="btn mt-2"
-                   style="background:#7c3aed; color:#fff; border-radius:50px;">
-                    Clear Search
-                </a>
-            </div>
-        @endforelse
-    </div>
+    {{-- Jobs list --}}
+    @forelse($jobs as $job)
+        @php
+            $daysLeft  = $job->expires_at ? now()->diffInDays($job->expires_at, false) : null;
+            $isExpired = $daysLeft !== null && $daysLeft <= 0;
+            $isUrgent  = $daysLeft !== null && $daysLeft > 0 && $daysLeft <= 5;
+        @endphp
 
-    {{-- Pagination --}}
-    <div class="mt-5 d-flex justify-content-center">
-        {{ $jobs->links() }}
-    </div>
+        <div class="job-row">
+            <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+
+                {{-- Job info --}}
+                <div style="flex:1; min-width:0;">
+                    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                        <h5 class="text-white fw-bold mb-0" style="font-size:1rem;">
+                            {{ $job->title }}
+                        </h5>
+                        <span class="job-type-badge">{{ $job->job_type }}</span>
+
+                        {{-- Expiry badge --}}
+                        @if($job->expires_at)
+                            @if($isExpired)
+                                <span class="expiry-badge"
+                                      style="background:rgba(239,68,68,0.15); color:#ef4444;
+                                             border:1px solid rgba(239,68,68,0.3);">
+                                    Expired
+                                </span>
+                            @elseif($isUrgent)
+                                <span class="expiry-badge"
+                                      style="background:rgba(251,191,36,0.12); color:#fbbf24;
+                                             border:1px solid rgba(251,191,36,0.3);">
+                                    {{ $daysLeft }}d left
+                                </span>
+                            @else
+                                <span class="expiry-badge"
+                                      style="background:rgba(52,211,153,0.1); color:#34d399;
+                                             border:1px solid rgba(52,211,153,0.25);">
+                                    {{ $daysLeft }}d left
+                                </span>
+                            @endif
+                        @else
+                            <span class="expiry-badge"
+                                  style="background:rgba(124,58,237,0.12); color:#a78bfa;
+                                         border:1px solid rgba(124,58,237,0.3);">
+                                No expiry
+                            </span>
+                        @endif
+                    </div>
+
+                    <p style="color:rgba(255,255,255,0.45); font-size:0.83rem; margin:0;">
+                        <i class="bi bi-building me-1"></i>{{ $job->company_name }}
+                        <span class="mx-2" style="opacity:0.3;">|</span>
+                        <i class="bi bi-geo-alt me-1"></i>{{ $job->location }}
+                        @if($job->salary)
+                            <span class="mx-2" style="opacity:0.3;">|</span>
+                            <i class="bi bi-cash me-1" style="color:#34d399;"></i>
+                            <span style="color:#34d399;">{{ $job->salary }}</span>
+                        @endif
+                        <span class="mx-2" style="opacity:0.3;">|</span>
+                        <i class="bi bi-people me-1"></i>
+                        {{ $job->applications()->count() }} applicant(s)
+                        <span class="mx-2" style="opacity:0.3;">|</span>
+                        Posted {{ $job->created_at->diffForHumans() }}
+                    </p>
+                </div>
+
+                {{-- Action buttons --}}
+                <div class="d-flex gap-2 align-items-center">
+                    <a href="{{ route('recruiter.jobs.edit', $job->id) }}" class="btn-edit">
+                        <i class="bi bi-pencil me-1"></i>Edit
+                    </a>
+                    <form method="POST"
+                          action="{{ route('recruiter.jobs.destroy', $job->id) }}"
+                          onsubmit="return confirm('Delete this job? This cannot be undone.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-delete">
+                            <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    @empty
+        <div style="text-align:center; padding:4rem 0;
+                    color:rgba(255,255,255,0.25);">
+            <i class="bi bi-briefcase" style="font-size:3rem; display:block; margin-bottom:12px;"></i>
+            <p style="font-size:0.95rem;">You haven't posted any jobs yet.</p>
+            <a href="{{ route('recruiter.jobs.create') }}"
+               style="background:#7c3aed; color:#fff; border-radius:50px;
+                      padding:8px 24px; text-decoration:none;
+                      font-size:0.9rem; font-weight:600;">
+                Post your first job →
+            </a>
+        </div>
+    @endforelse
+
+    {{-- Pagination — works because controller uses ->paginate(10) --}}
+    @if($jobs->hasPages())
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $jobs->links() }}
+        </div>
+    @endif
 
 </div>
 @endsection

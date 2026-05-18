@@ -44,6 +44,13 @@
             Recruiter Menu
         </p>
 
+        @php
+            $myJobsActive   = request()->routeIs('recruiter.jobs.index')
+                           || request()->routeIs('recruiter.jobs.show')
+                           || request()->routeIs('recruiter.jobs.edit');
+            $postJobActive  = request()->routeIs('recruiter.jobs.create');
+        @endphp
+
         <a href="{{ route('recruiter.dashboard') }}"
            style="display:flex; align-items:center; gap:12px; padding:10px 12px;
                   border-radius:10px; text-decoration:none; margin-bottom:4px;
@@ -57,7 +64,7 @@
            style="display:flex; align-items:center; gap:12px; padding:10px 12px;
                   border-radius:10px; text-decoration:none; margin-bottom:4px;
                   font-size:0.9rem; font-weight:600; transition:all 0.2s;
-                  {{ request()->routeIs('recruiter.jobs.*') ? 'background:#7c3aed; color:#fff;' : 'color:#a78bfa;' }}">
+                  {{ $myJobsActive ? 'background:#7c3aed; color:#fff;' : 'color:#a78bfa;' }}">
             <i class="bi bi-briefcase" style="font-size:1.1rem;"></i>
             My Jobs
         </a>
@@ -66,7 +73,7 @@
            style="display:flex; align-items:center; gap:12px; padding:10px 12px;
                   border-radius:10px; text-decoration:none; margin-bottom:4px;
                   font-size:0.9rem; font-weight:600; transition:all 0.2s;
-                  {{ request()->routeIs('recruiter.jobs.create') ? 'background:#7c3aed; color:#fff;' : 'color:#a78bfa;' }}">
+                  {{ $postJobActive ? 'background:#7c3aed; color:#fff;' : 'color:#a78bfa;' }}">
             <i class="bi bi-plus-circle" style="font-size:1.1rem;"></i>
             Post a Job
         </a>
@@ -114,7 +121,6 @@
             My Applications
         </a>
 
-        {{-- Active only on profile page, NOT on edit page --}}
         <a href="{{ route('candidate.profile') }}"
            style="display:flex; align-items:center; gap:12px; padding:10px 12px;
                   border-radius:10px; text-decoration:none; margin-bottom:4px;
@@ -124,7 +130,6 @@
             My Profile
         </a>
 
-        {{-- Active only on edit page --}}
         <a href="{{ route('candidate.profile.edit') }}"
            style="display:flex; align-items:center; gap:12px; padding:10px 12px;
                   border-radius:10px; text-decoration:none; margin-bottom:4px;
@@ -138,18 +143,34 @@
 
     <div style="flex:1;"></div>
 
-    {{-- Promo card — button switches based on current page --}}
+    {{-- Promo card --}}
     <div style="background:linear-gradient(135deg, #3b0f8c 0%, #7c3aed 100%);
                 border-radius:14px; padding:18px 16px; margin-bottom:0.85rem;
                 text-align:center;">
         <i class="bi bi-rocket-takeoff-fill text-white" style="font-size:1.5rem;"></i>
         <p class="text-white fw-bold mt-2 mb-1" style="font-size:0.85rem;">
-            Complete Your Profile
+            @if(Auth::user()->role === 'recruiter')
+                Build Your Profile
+            @else
+                Complete Your Profile
+            @endif
         </p>
         <p style="color:rgba(255,255,255,0.65); font-size:0.75rem; margin-bottom:10px;">
-            Stand out to recruiters
+            @if(Auth::user()->role === 'recruiter')
+                Attract top candidates
+            @else
+                Stand out to recruiters
+            @endif
         </p>
-        @if(Auth::user()->role === 'candidate')
+
+        @if(Auth::user()->role === 'recruiter')
+            <a href="{{ route('recruiter.jobs.create') }}"
+               style="background:#fff; color:#7c3aed; border-radius:8px;
+                      padding:6px 16px; font-size:0.8rem; font-weight:700;
+                      text-decoration:none; display:inline-block;">
+                Edit Profile
+            </a>
+        @else
             @if(request()->routeIs('candidate.profile') && !request()->routeIs('candidate.profile.edit'))
                 <a href="{{ route('candidate.profile.edit') }}"
                    style="background:#fff; color:#7c3aed; border-radius:8px;
@@ -165,13 +186,6 @@
                     View Profile
                 </a>
             @endif
-        @else
-            <a href="{{ route('recruiter.jobs.create') }}"
-               style="background:#fff; color:#7c3aed; border-radius:8px;
-                      padding:6px 16px; font-size:0.8rem; font-weight:700;
-                      text-decoration:none; display:inline-block;">
-                Post a Job
-            </a>
         @endif
     </div>
 

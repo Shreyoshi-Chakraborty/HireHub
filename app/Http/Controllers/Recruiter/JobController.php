@@ -9,20 +9,18 @@ use Illuminate\Support\Facades\Auth;
 
 class JobController extends Controller
 {
-    // List recruiter's jobs
+    // List recruiter's own jobs — paginate so ->links() works
     public function index()
     {
-        $jobs = Auth::user()->jobs()->latest()->get();
+        $jobs = Auth::user()->jobs()->latest()->paginate(10);
         return view('recruiter.jobs.index', compact('jobs'));
     }
 
-    // Show create job form
     public function create()
     {
         return view('recruiter.jobs.create');
     }
 
-    // Store new job
     public function store(Request $request)
     {
         $request->validate([
@@ -32,23 +30,24 @@ class JobController extends Controller
             'salary'       => 'nullable|string|max:100',
             'description'  => 'required|string',
             'job_type'     => 'required|in:full-time,part-time,remote,contract',
+            'expires_at'   => 'nullable|date|after:today',
         ]);
 
-        Auth::user()->jobs()->create($request->all());
+        Auth::user()->jobs()->create($request->only([
+            'title', 'company_name', 'location',
+            'salary', 'description', 'job_type', 'expires_at',
+        ]));
 
         return redirect()->route('recruiter.jobs.index')
             ->with('success', 'Job posted successfully!');
     }
 
-    // Show edit form
     public function edit(Job $job)
     {
-        // Make sure recruiter owns this job
         abort_if($job->recruiter_id !== Auth::id(), 403);
         return view('recruiter.jobs.edit', compact('job'));
     }
 
-    // Update job
     public function update(Request $request, Job $job)
     {
         abort_if($job->recruiter_id !== Auth::id(), 403);
@@ -60,15 +59,18 @@ class JobController extends Controller
             'salary'       => 'nullable|string|max:100',
             'description'  => 'required|string',
             'job_type'     => 'required|in:full-time,part-time,remote,contract',
+            'expires_at'   => 'nullable|date',
         ]);
 
-        $job->update($request->all());
+        $job->update($request->only([
+            'title', 'company_name', 'location',
+            'salary', 'description', 'job_type', 'expires_at',
+        ]));
 
         return redirect()->route('recruiter.jobs.index')
             ->with('success', 'Job updated successfully!');
     }
 
-    // Delete job
     public function destroy(Job $job)
     {
         abort_if($job->recruiter_id !== Auth::id(), 403);
