@@ -61,11 +61,7 @@
     .btn-delete:hover {
         background: rgba(239,68,68,0.18);
     }
-
-    /* Style the Laravel pagination to match dark theme */
-    .pagination {
-        gap: 4px;
-    }
+    .pagination { gap: 4px; }
     .page-link {
         background: #13132a;
         border: 1px solid #1e1e3a;
@@ -95,20 +91,23 @@
 <div class="p-4" style="background:#0d0d1a; min-height:100vh;">
 
     {{-- Header --}}
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <div>
-            <h3 class="fw-bold mb-0 text-white">My Jobs</h3>
-            <p style="color:rgba(255,255,255,0.4); margin:0; font-size:0.9rem;">
-                All job postings you have created
-            </p>
-        </div>
-        <a href="{{ route('recruiter.jobs.create') }}"
-           style="background:#7c3aed; color:#fff; border-radius:10px;
-                  padding:10px 20px; text-decoration:none;
-                  font-size:0.9rem; font-weight:600;">
-            <i class="bi bi-plus-lg me-1"></i> Post a Job
-        </a>
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold mb-0 text-white">My Jobs</h3>
+        <p style="color:rgba(255,255,255,0.4); margin:0; font-size:0.9rem;">
+            All job postings you have created
+        </p>
     </div>
+    <a href="{{ route('recruiter.dashboard') }}"
+       style="background:rgba(255,255,255,0.05); border:1px solid #1e1e3a;
+              color:rgba(255,255,255,0.6); border-radius:10px; padding:8px 18px;
+              font-size:0.85rem; font-weight:600; text-decoration:none;
+              display:inline-flex; align-items:center; gap:6px; transition:all 0.2s;"
+       onmouseover="this.style.borderColor='#7c3aed'; this.style.color='#a78bfa'"
+       onmouseout="this.style.borderColor='#1e1e3a'; this.style.color='rgba(255,255,255,0.6)'">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
 
     {{-- Success message --}}
     @if(session('success'))
@@ -122,7 +121,10 @@
     {{-- Jobs list --}}
     @forelse($jobs as $job)
         @php
-            $daysLeft  = $job->expires_at ? now()->diffInDays($job->expires_at, false) : null;
+            // Round down to whole days — no decimals
+            $daysLeft  = $job->expires_at
+                            ? (int) now()->diffInDays($job->expires_at, false)
+                            : null;
             $isExpired = $daysLeft !== null && $daysLeft <= 0;
             $isUrgent  = $daysLeft !== null && $daysLeft > 0 && $daysLeft <= 5;
         @endphp
@@ -144,19 +146,19 @@
                                 <span class="expiry-badge"
                                       style="background:rgba(239,68,68,0.15); color:#ef4444;
                                              border:1px solid rgba(239,68,68,0.3);">
-                                    Expired
+                                    <i class="bi bi-x-circle me-1"></i>Expired
                                 </span>
                             @elseif($isUrgent)
                                 <span class="expiry-badge"
                                       style="background:rgba(251,191,36,0.12); color:#fbbf24;
                                              border:1px solid rgba(251,191,36,0.3);">
-                                    {{ $daysLeft }}d left
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ $daysLeft }}d left
                                 </span>
                             @else
                                 <span class="expiry-badge"
                                       style="background:rgba(52,211,153,0.1); color:#34d399;
                                              border:1px solid rgba(52,211,153,0.25);">
-                                    {{ $daysLeft }}d left
+                                    <i class="bi bi-clock me-1"></i>{{ $daysLeft }}d left
                                 </span>
                             @endif
                         @else
@@ -217,7 +219,7 @@
         </div>
     @endforelse
 
-    {{-- Pagination — works because controller uses ->paginate(10) --}}
+    {{-- Pagination --}}
     @if($jobs->hasPages())
         <div class="mt-4 d-flex justify-content-center">
             {{ $jobs->links() }}

@@ -14,7 +14,10 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'photo_path',   // added for profile photo
+        'photo_path',
+        'position',
+        'company_name',
+        'phone',
     ];
 
     protected $hidden = [
@@ -51,10 +54,6 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
-    /**
-     * Returns the full URL to the user's avatar.
-     * Returns null if no photo uploaded — views fall back to initial letter.
-     */
     public function getAvatarUrl(): ?string
     {
         if ($this->photo_path) {

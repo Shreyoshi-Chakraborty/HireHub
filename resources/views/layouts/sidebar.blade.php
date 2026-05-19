@@ -163,13 +163,13 @@
             @endif
         </p>
 
-        @if(Auth::user()->role === 'recruiter')
-            <a href="{{ route('recruiter.jobs.create') }}"
-               style="background:#fff; color:#7c3aed; border-radius:8px;
-                      padding:6px 16px; font-size:0.8rem; font-weight:700;
-                      text-decoration:none; display:inline-block;">
-                Edit Profile
-            </a>
+       @if(Auth::user()->role === 'recruiter')
+    <a href="{{ route('recruiter.profile') }}"
+       style="background:#fff; color:#7c3aed; border-radius:8px;
+              padding:6px 16px; font-size:0.8rem; font-weight:700;
+              text-decoration:none; display:inline-block;">
+        Edit Profile
+    </a>
         @else
             @if(request()->routeIs('candidate.profile') && !request()->routeIs('candidate.profile.edit'))
                 <a href="{{ route('candidate.profile.edit') }}"

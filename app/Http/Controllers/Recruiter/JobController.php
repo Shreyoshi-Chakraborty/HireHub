@@ -9,10 +9,14 @@ use Illuminate\Support\Facades\Auth;
 
 class JobController extends Controller
 {
-    // List recruiter's own jobs — paginate so ->links() works
     public function index()
     {
-        $jobs = Auth::user()->jobs()->latest()->paginate(10);
+        $user = Auth::user();
+
+        // Auto-delete expired jobs for this recruiter
+        $user->jobs()->expired()->delete();
+
+        $jobs = $user->jobs()->latest()->paginate(10);
         return view('recruiter.jobs.index', compact('jobs'));
     }
 

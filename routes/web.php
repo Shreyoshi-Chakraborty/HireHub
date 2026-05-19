@@ -8,6 +8,7 @@ use App\Http\Controllers\Candidate\DashboardController as CandidateDashboard;
 use App\Http\Controllers\Candidate\ApplicationController;
 use App\Http\Controllers\Recruiter\DashboardController as RecruiterDashboard;
 use App\Http\Controllers\Recruiter\JobController;
+use App\Http\Controllers\Recruiter\ProfileController as RecruiterProfile;
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs.index');
@@ -33,5 +34,7 @@ Route::middleware(['auth', 'recruiter'])->prefix('recruiter')->name('recruiter.'
     Route::get('/dashboard', [RecruiterDashboard::class, 'index'])->name('dashboard');
     Route::get('/applicants', [RecruiterDashboard::class, 'applicants'])->name('applicants');
     Route::patch('/applicants/{application}/status', [RecruiterDashboard::class, 'updateStatus'])->name('applicants.updateStatus');
+    Route::get('/profile', [RecruiterProfile::class, 'edit'])->name('profile');
+    Route::post('/profile', [RecruiterProfile::class, 'update'])->name('profile.update');
     Route::resource('jobs', JobController::class);
 });

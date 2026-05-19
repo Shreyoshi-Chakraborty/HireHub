@@ -124,7 +124,7 @@
                 RECRUITER DASHBOARD
             </p>
             <h3 class="text-white fw-bold mb-1" style="font-size:1.6rem;">
-                Welcome back, {{ $user->name }}! 
+                Welcome back, {{ $user->name }}!
             </h3>
             <p style="color:rgba(255,255,255,0.6); margin:0; font-size:0.9rem;">
                 Manage your job postings and find the best talent.
@@ -211,50 +211,50 @@
 
                 @forelse($recentJobs as $job)
                     @php
-                        $daysLeft  = $job->expires_at ? now()->diffInDays($job->expires_at, false) : null;
+                        $daysLeft  = $job->expires_at
+                                        ? (int) now()->diffInDays($job->expires_at, false)
+                                        : null;
                         $isExpired = $daysLeft !== null && $daysLeft <= 0;
                         $isUrgent  = $daysLeft !== null && $daysLeft > 0 && $daysLeft <= 5;
                     @endphp
-                    <div class="expiry-row">
-                        <div>
-                            <div class="expiry-title">{{ $job->title }}</div>
-                            <div style="font-size:0.75rem; color:rgba(255,255,255,0.35); margin-top:2px;">
-                                {{ $job->company_name }} · {{ $job->job_type }}
+
+                    {{-- Skip expired ones from dashboard display --}}
+                    @if(!$isExpired)
+                        <div class="expiry-row">
+                            <div>
+                                <div class="expiry-title">{{ $job->title }}</div>
+                                <div style="font-size:0.75rem; color:rgba(255,255,255,0.35); margin-top:2px;">
+                                    {{ $job->company_name }} · {{ $job->job_type }}
+                                </div>
                             </div>
-                        </div>
-                        @if($job->expires_at)
-                            @if($isExpired)
-                                <span class="expiry-badge"
-                                      style="background:rgba(239,68,68,0.15); color:#ef4444;
-                                             border:1px solid rgba(239,68,68,0.3);">
-                                    Expired
-                                </span>
-                            @elseif($isUrgent)
-                                <span class="expiry-badge"
-                                      style="background:rgba(251,191,36,0.12); color:#fbbf24;
-                                             border:1px solid rgba(251,191,36,0.3);">
-                                    {{ $daysLeft }}d left
-                                </span>
+                            @if($job->expires_at)
+                                @if($isUrgent)
+                                    <span class="expiry-badge"
+                                          style="background:rgba(251,191,36,0.12); color:#fbbf24;
+                                                 border:1px solid rgba(251,191,36,0.3);">
+                                        <i class="bi bi-exclamation-circle me-1"></i>{{ $daysLeft }}d left
+                                    </span>
+                                @else
+                                    <span class="expiry-badge"
+                                          style="background:rgba(52,211,153,0.1); color:#34d399;
+                                                 border:1px solid rgba(52,211,153,0.25);">
+                                        <i class="bi bi-clock me-1"></i>{{ $daysLeft }}d left
+                                    </span>
+                                @endif
                             @else
                                 <span class="expiry-badge"
-                                      style="background:rgba(52,211,153,0.1); color:#34d399;
-                                             border:1px solid rgba(52,211,153,0.25);">
-                                    {{ $daysLeft }}d left
+                                      style="background:rgba(124,58,237,0.12); color:#a78bfa;
+                                             border:1px solid rgba(124,58,237,0.3);">
+                                    No expiry
                                 </span>
                             @endif
-                        @else
-                            <span class="expiry-badge"
-                                  style="background:rgba(124,58,237,0.12); color:#a78bfa;
-                                         border:1px solid rgba(124,58,237,0.3);">
-                                No expiry
-                            </span>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 @empty
                     <div style="text-align:center; padding:2rem 0;
                                 color:rgba(255,255,255,0.25); font-size:0.9rem;">
                         <i class="bi bi-inbox" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
-                        No jobs yet.
+                        No active jobs.
                         <a href="{{ route('recruiter.jobs.create') }}"
                            style="color:#a78bfa; display:block; margin-top:6px; font-weight:600;">
                             Post your first job →
@@ -264,7 +264,7 @@
             </div>
         </div>
 
-        {{-- Quick Stats — NO "Post a New Job" button here --}}
+        {{-- Quick Stats --}}
         <div class="col-md-4">
             <div class="dash-card" style="height:auto;">
                 <div class="d-flex align-items-center gap-3 mb-3">
@@ -300,7 +300,10 @@
                     <div style="background:#0d0d1a; border:1px solid #1e1e3a;
                                 border-radius:10px; padding:12px 16px;
                                 display:flex; justify-content:space-between; align-items:center;">
-                        <span style="color:rgba(255,255,255,0.55); font-size:0.85rem;">Expiring Soon</span>
+                        <span style="color:rgba(255,255,255,0.55); font-size:0.85rem;">
+                            <i class="bi bi-exclamation-circle me-1" style="color:#fbbf24;"></i>
+                            Expiring Soon
+                        </span>
                         <span style="color:#fbbf24; font-weight:800; font-size:1.1rem;">
                             {{ $expiringSoon }}
                         </span>
@@ -308,13 +311,15 @@
                     <div style="background:#0d0d1a; border:1px solid #1e1e3a;
                                 border-radius:10px; padding:12px 16px;
                                 display:flex; justify-content:space-between; align-items:center;">
-                        <span style="color:rgba(255,255,255,0.55); font-size:0.85rem;">Expired Jobs</span>
+                        <span style="color:rgba(255,255,255,0.55); font-size:0.85rem;">
+                            <i class="bi bi-x-circle me-1" style="color:#ef4444;"></i>
+                            Expired Jobs
+                        </span>
                         <span style="color:#ef4444; font-weight:800; font-size:1.1rem;">
                             {{ $expiredJobs }}
                         </span>
                     </div>
                 </div>
-                {{-- NO Post a New Job button here --}}
             </div>
         </div>
 

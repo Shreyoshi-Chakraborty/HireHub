@@ -6,36 +6,42 @@ use App\Models\Job;
 
 class LandingController extends Controller
 {
-    // CHANGE LANDING PAGE HERE
     public function index()
     {
-        $featuredJobs = Job::latest()->take(6)->get();
+        $featuredJobs = Job::active()
+            ->orderByRaw('expires_at IS NULL ASC')
+            ->orderBy('expires_at', 'asc')
+            ->take(6)
+            ->get();
+
         return view('landing.index', compact('featuredJobs'));
     }
 
-    // Public jobs listing with search + location filter
     public function jobs()
     {
-        $query = Job::query();
+        $query = Job::active();
 
-        // Filter by keyword
         if (request('search')) {
-            $query->where('title', 'like', '%' . request('search') . '%')
+            $query->where(function($q) {
+                $q->where('title', 'like', '%' . request('search') . '%')
                   ->orWhere('company_name', 'like', '%' . request('search') . '%');
+            });
         }
 
-        // Filter by location
         if (request('location')) {
             $query->where('location', 'like', '%' . request('location') . '%');
         }
 
-        $jobs = $query->latest()->paginate(10);
+        $jobs = $query->orderByRaw('expires_at IS NULL ASC')
+                      ->orderBy('expires_at', 'asc')
+                      ->paginate(10);
+
         return view('jobs.index', compact('jobs'));
     }
 
     public function show(Job $job)
     {
-        $hasApplied = false;
+        $hasApplied  = false;
         $application = null;
 
         if (auth()->check() && auth()->user()->role === 'candidate') {
